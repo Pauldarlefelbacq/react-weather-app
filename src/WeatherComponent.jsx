@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 
 function Weather(){
+// Unités désolé d'avance
+
+    const [speedUnit, setSpeedUnit] = useState("");
+//&wind_speed_unit=mph
+    const[tempUnit, setTempUnit] = useState("");
+//&temperature_unit=fahrenheit
+    const [precUnit, setPrecUnit] = useState("");
+//&precipitation_unit=inch
+
     const [weatherData, setWeatherData] = useState(null);
     const [villelat, setVillelat] = useState(null);
     const [villelong, setVillelong] = useState(null);
@@ -25,7 +34,7 @@ function Weather(){
             setVillelat(lat);
             setVillelong(long);
 
-
+            if ()
             const weatherdata = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current_weather=true&hourly=temperature_2m,apparent_temperature,precipitation,surface_pressure,is_day,wind_speed_10m,precipitation_probability`)
             .then(response => response.json())
             
