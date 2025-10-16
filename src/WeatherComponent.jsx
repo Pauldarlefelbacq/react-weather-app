@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 
 function Weather(){
+// Unités désolé d'avance
+
+    const [speedUnit, setSpeedUnit] = useState("");
+//&wind_speed_unit=mph
+//&temperature_unit=fahrenheit
+    const [precUnit, setPrecUnit] = useState("");
+//&precipitation_unit=inch
+
     const [weatherData, setWeatherData] = useState(null);
     const [villelat, setVillelat] = useState(null);
     const [villelong, setVillelong] = useState(null);
