@@ -16,10 +16,12 @@ function Weather(){
     const [date, setDate] = useState(null);
     const [nextHourForecast, setNextHourForecast] = useState(null);
     const [dayoe, setDayoe] = useState(null);
+    const[input, setInput] = useState("")
+    
     
 
-
     useEffect(()=>{
+
         const fetchvilleweather = async()=>{
             const villedata = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${ville}`)
             .then(response => response.json())
@@ -72,7 +74,7 @@ function Weather(){
         };
         fetchvilleweather();
     },
-    []);
+    [ville]);
 
 
     if (weatherData === null){
@@ -108,11 +110,14 @@ function Weather(){
                 {/* Search Section */}
                 <div className="flex flex-col sm:flex-row justify-center gap-3 mb-8 md:mb-12 max-w-2xl mx-auto">
                     <input 
+                        onChange={(e)=> setInput(e.target.value)}
+                        value={input}
+                        id="text"
                         type="text" 
                         placeholder="Rechercher un lieu..."
                         className="w-full sm:flex-1 px-4 md:px-6 py-3 bg-[#1a1f3a] border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition"
                     />
-                    <button className="px-6 md:px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition whitespace-nowrap">
+                    <button onClick={()=>setVille(input)} className="px-6 md:px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition whitespace-nowrap">
                         Rechercher
                     </button>
                 </div>
@@ -137,9 +142,15 @@ function Weather(){
                                     <div className="text-6xl md:text-7xl lg:text-8xl font-bold">
                                         {Math.round(weatherData.current_weather.temperature)}°
                                     </div>
-                                    <div className="text-7xl md:text-8xl lg:text-9xl">
-                                        ☀️
-                                    </div>
+                                    {weatherData.current_weather.is_day === 1 ? (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                            ☀️
+                                        </div>
+                                    ) : (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                            🌕
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -151,7 +162,7 @@ function Weather(){
                                 <p className="text-gray-400 text-xs md:text-sm mb-2">Ressenti</p>
                                 {nextHourForecast && nextHourForecast.temp ? (
                                     <p className="text-xl md:text-2xl font-bold">
-                                        {Math.round(nextHourForecast.temp)}°
+                                        {Math.round(nextHourForecast.temp)}{weatherData.current_weather_units.temperature}
                                     </p>
                                 ) : (
                                     <p className="text-base md:text-lg text-gray-500">--°</p>
