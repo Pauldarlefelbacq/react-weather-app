@@ -12,9 +12,11 @@ function Weather(){
     const [nextHourForecast, setNextHourForecast] = useState(null);
     const [dayoe, setDayoe] = useState(null);
     const[input, setInput] = useState("");
-    const [unit, setUnit] = useState("");
-    
-    const ref = useRef();
+    const [speedUnit, setSpeedUnit] = useState("");
+    const [precUnit, setPrecUnit] = useState("");
+    const [tempUnit, setTempUnit] = useState("");
+
+    // const ref = useRef();
     // const [sort, setSort] = useState("Alphabetical");
     
 
@@ -36,13 +38,24 @@ function Weather(){
             setVillelat(lat);
             setVillelong(long);
 
-
-            const weatherdata = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current_weather=true&daily=uv_index_max,temperature_2m_max,temperature_2m_min,sunrise,sunset&hourly=temperature_2m,apparent_temperature,precipitation,surface_pressure,is_day,wind_speed_10m,precipitation_probability`)
+            let URL = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${long}&current_weather=true&daily=uv_index_max,temperature_2m_max,temperature_2m_min,sunrise,sunset&hourly=temperature_2m,apparent_temperature,precipitation,surface_pressure,is_day,wind_speed_10m,precipitation_probability`;
+            if (speedUnit){
+                URL += (speedUnit);                
+            };
+            if (tempUnit){
+                URL += (tempUnit);                
+            };
+            if (precUnit){
+                URL += (precUnit);                
+            };
+            const weatherdata = await fetch(`${URL}`)
             .then(response => response.json())
+
             
+        
             setWeatherData(weatherdata);
             console.log("données météto", weatherdata);
-
+            
             const now = new Date();
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -64,10 +77,12 @@ function Weather(){
             if (currentIndexHour !== -1 && currentIndexHour + 1 < weatherdata.hourly.time.length) {
                 const nextHourIndex = currentIndexHour + 1;
                 const forecastTemp = weatherdata.hourly.apparent_temperature[nextHourIndex];
-                const forecastPressure = weatherdata.hourly.surface_pressure[nextHourIndex]; 
+                const forecastPressure = weatherdata.hourly.surface_pressure[nextHourIndex];
+                const forecastPrecipitation = weatherdata.hourly.precipitation[nextHourIndex];
                 setNextHourForecast({
                     temp: forecastTemp,
-                    pressure: forecastPressure
+                    pressure: forecastPressure,
+                    precipitation: forecastPrecipitation,
                 });
             }
             
@@ -75,7 +90,7 @@ function Weather(){
         };
         fetchvilleweather();
     },
-    [ville]);
+    [ville, speedUnit, precUnit, tempUnit]);
 
 
     if (weatherData === null){
@@ -95,9 +110,42 @@ function Weather(){
                     </div>
                     <a href="/" className="text-lg md:text-xl font-bold">Meteo en React !</a>
                 </div>
-                <button className="px-4 md:px-6 py-2 bg-[#1a1f3a] rounded-lg border border-gray-700 hover:border-gray-600 transition text-sm md:text-base">
-                    Unités ▾
-                </button>
+                
+                <div className="collapse collapse-arrow bg-[#1a1f3a] rounded-lg border border-gray-700 w-auto">
+                    <input type="checkbox" /> 
+                    <div className="collapse-title text-sm md:text-base font-medium">
+                        Unités
+                    </div>
+                    <div className="collapse-content *:my-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                className="checkbox checkbox-primary"
+                                onChange={(e) => setTempUnit(e.target.checked ? "&temperature_unit=fahrenheit" : "")}
+                            />
+                            <span className="text-sm">fahrenheit</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                className="checkbox checkbox-primary"
+                                onChange={(e) => setSpeedUnit(e.target.checked ? "&wind_speed_unit=mph" : "")}
+                            />
+                            <span className="text-sm">MpH</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                className="checkbox checkbox-primary"
+                                onChange={(e) => setPrecUnit(e.target.checked ? "&precipitation_unit=inch" : "")}
+                            />
+                            <span className="text-sm">Inch</span>
+                        </label>
+                    </div>
+                    
+                </div>
             </nav>
 
             <div className="px-4 md:px-8 py-6 md:py-8">
@@ -123,10 +171,6 @@ function Weather(){
                 <div className="flex flex-col lg:flex-row gap-6">
                     <div className="flex-1">
                         <div className="relative bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600 rounded-2xl md:rounded-3xl p-6 md:p-8 mb-6 overflow-hidden">
-                            <div className="absolute top-10 right-10 w-3 h-3 bg-white/30 rounded-full"></div>
-                            <div className="absolute top-24 right-32 w-2 h-2 bg-white/20 rounded-full hidden md:block"></div>
-                            <div className="absolute bottom-20 left-20 w-4 h-4 bg-white/25 rounded-full hidden md:block"></div>
-                            <div className="absolute bottom-32 right-16 w-2 h-2 bg-white/30 rounded-full"></div>
                             
                             <div className="relative z-10">
                                 <h2 className="text-2xl md:text-3xl font-bold mb-1 md:mb-2">{ville}</h2>
@@ -307,11 +351,15 @@ function Weather(){
                                     <span className="text-xs md:text-sm ml-1">{weatherData.current_weather_units.windspeed}</span>
                                 </p>
                             </div>
-
+                            
+                            {nextHourForecast ? (
                             <div className="bg-[#1a1f3a] rounded-xl md:rounded-2xl p-4 md:p-6">
                                 <p className="text-gray-400 text-xs md:text-sm mb-2">Précipitation</p>
-                                <p className="text-xl md:text-2xl font-bold">0 mm</p>
+                                <p className="text-xl md:text-2xl font-bold">
+                                    {nextHourForecast.precipitation} mm
+                                </p>
                             </div>
+                            ) : null}
                         </div>
 
                         <div className="grid grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-4">
