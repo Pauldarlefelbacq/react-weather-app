@@ -1,4 +1,6 @@
 import * as Plot from "@observablehq/plot";
+import { Leapfrog } from "ldrs/react";
+import 'ldrs/react/Leapfrog.css';
 import { useState, useEffect, useRef } from "react";
 
 function Weather(){
@@ -15,6 +17,7 @@ function Weather(){
     const [speedUnit, setSpeedUnit] = useState("");
     const [precUnit, setPrecUnit] = useState("");
     const [tempUnit, setTempUnit] = useState("");
+    const[previsions, setPrevisions] = useState([]);
 
     // const ref = useRef();
     // const [sort, setSort] = useState("Alphabetical");
@@ -51,18 +54,13 @@ function Weather(){
             const weatherdata = await fetch(`${URL}`)
             .then(response => response.json())
 
-            
         
             setWeatherData(weatherdata);
             console.log("données météto", weatherdata);
             
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hour = String(now.getHours()).padStart(2, '0');
-            const currentHourString = `${year}-${month}-${day}T${hour}:00`;
-            const currentDay = `${year}-${month}-${day}`;
+            const currentHourString = weatherdata.current_weather.time;
+            const currentDay = currentHourString.slice(0, 10)
+            const currentHourSearchString = currentHourString.slice(0, 13);
             setDate(currentDay);
 
             const currentIndexDay = weatherdata.daily.time.findIndex(time => time === currentDay);
@@ -73,30 +71,193 @@ function Weather(){
                 });
             }
 
-            const currentIndexHour = weatherdata.hourly.time.findIndex(time => time === currentHourString);
-            if (currentIndexHour !== -1 && currentIndexHour + 1 < weatherdata.hourly.time.length) {
+            const currentIndexHour = weatherdata.hourly.time.findIndex(time => time.startsWith(currentHourSearchString));
+            if (currentIndexHour !== -1) {
                 const nextHourIndex = currentIndexHour + 1;
-                const forecastTemp = weatherdata.hourly.apparent_temperature[nextHourIndex];
-                const forecastPressure = weatherdata.hourly.surface_pressure[nextHourIndex];
-                const forecastPrecipitation = weatherdata.hourly.precipitation[nextHourIndex];
-                setNextHourForecast({
-                    temp: forecastTemp,
-                    pressure: forecastPressure,
-                    precipitation: forecastPrecipitation,
-                });
+                if (nextHourIndex < weatherdata.hourly.time.length) {
+                    setNextHourForecast({
+                        temp: weatherdata.hourly.apparent_temperature[nextHourIndex],
+                        pressure: weatherdata.hourly.surface_pressure[nextHourIndex],
+                        precipitation: weatherdata.hourly.precipitation[nextHourIndex],
+                    });
+                }else{
+                    setNextHourForecast({
+                        temp: weatherdata.hourly.apparent_temperature[currentIndexHour],
+                        pressure: weatherdata.hourly.surface_pressure[currentIndexHour], 
+                        precipitation: weatherdata.hourly.precipitation[currentIndexHour],
+                    });
+                }
+                const prev = []
+                for (let i = currentIndexHour; i <= currentIndexHour + 5; i++) {
+                    if (weatherdata.hourly.time[i]) { 
+                        prev.push({
+                            time: weatherdata.hourly.time[i].slice(11, 16),
+                            icone: weatherdata.hourly.is_day[i],
+                            temp: weatherdata.hourly.temperature_2m[i]
+                        });
+                    }
+                        
+                };
+                setPrevisions(prev);
             }
-            
-
         };
         fetchvilleweather();
     },
     [ville, speedUnit, precUnit, tempUnit]);
+    console.log(previsions);
 
+    // pas dingue mais je vois mal comment faire autrement...
+    const situationAct = () => {
+                return weatherData.current_weather.is_day === 1 ? (
+                    (() => {
+                        switch (weatherData.current_weather.weathercode) {
+                            case 0:
+                                return (
+                                    <div className="text-7xl md:text-8xl lg:text-9xl">
+                                    ☀️
+                                    </div>
+                                );
+                                case 1:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌤️
+                                        </div>
+                                    );
+                                    case 2:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        ⛅
+                                        </div>
+                                    );
+                                    case 3:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        ☁️
+                                        </div>
+                                    );
+                                    case 45:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌫️
+                                        </div>
+                                    );
+                                    case 48:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌁
+                                        </div>
+                                    );
+                                    case 51:
+                                    case 53:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌦️
+                                        </div>
+                                    );
+                                    case 55:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌧️
+                                        </div>
+                                    );
+                                    case 56:
+                                    case 57:
+                                    case 66:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌧️
+                                        </div>
+                                    );
+                                    case 61:
+                                    case 80:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌦️
+                                        </div>
+                                    );
+                                    case 63:
+                                    case 81:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌧️
+                                        </div>
+                                    );
+                                    case 65:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌧️
+                                        </div>
+                                    );
+                                    case 67:
+                                    case 77:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌨️
+                                        </div>
+                                    );
+                                    case 71:
+                                    case 85:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌨️
+                                        </div>
+                                    );
+                                    case 73:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌨️
+                                        </div>
+                                    );
+                                    case 75:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌨️
+                                        </div>
+                                    );
+                                    case 86:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌨️
+                                        </div>
+                                    );
+                                    case 95:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        🌩️
+                                        </div>
+                                    );
+                                    case 96:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        ⛈️
+                                        </div>
+                                    );
+                                    case 99:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        ⛈️
+                                        </div>
+                                    );
+                                    default:
+                                    return (
+                                        <div className="text-7xl md:text-8xl lg:text-9xl">
+                                        ❓
+                                        </div>
+                                    );
+                                }
+                            })()
+                        ) : (
+                            <div className="text-7xl md:text-8xl lg:text-9xl">
+                                🌕
+                            </div>
+                                    )
+                            };
 
     if (weatherData === null){
         return(
             <div className="min-h-screen bg-[#0a0e27] flex items-center justify-center">
-                <h1 className="text-3xl font-bold text-white">Chargement en cours...</h1>
+                <h1 className="text-3xl font-bold text-white">Chargement en cours</h1>
+                <Leapfrog size="50" speed="2.5" color="white" />
             </div>
         )
     };
@@ -180,149 +341,7 @@ function Weather(){
                                     <div className="text-6xl md:text-7xl lg:text-8xl font-bold">
                                         {Math.round(weatherData.current_weather.temperature)}°
                                     </div>
-                                    {weatherData.current_weather.is_day === 1 ? (
-                                        (() => {
-                                            switch (weatherData.current_weather.weathercode) {
-                                                case 0:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        ☀️
-                                                        </div>
-                                                    );
-                                                    case 1:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌤️
-                                                        </div>
-                                                    );
-                                                    case 2:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        ⛅
-                                                        </div>
-                                                    );
-                                                    case 3:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        ☁️
-                                                        </div>
-                                                    );
-                                                    case 45:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌫️
-                                                        </div>
-                                                    );
-                                                    case 48:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌁
-                                                        </div>
-                                                    );
-                                                    case 51:
-                                                    case 53:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌦️
-                                                        </div>
-                                                    );
-                                                    case 55:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌧️
-                                                        </div>
-                                                    );
-                                                    case 56:
-                                                    case 57:
-                                                    case 66:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌧️❄️
-                                                        </div>
-                                                    );
-                                                    case 61:
-                                                    case 80:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌦️
-                                                        </div>
-                                                    );
-                                                    case 63:
-                                                    case 81:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌧️
-                                                        </div>
-                                                    );
-                                                    case 65:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌧️☔
-                                                        </div>
-                                                    );
-                                                    case 67:
-                                                    case 77:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌨️❄️
-                                                        </div>
-                                                    );
-                                                    case 71:
-                                                    case 85:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌨️
-                                                        </div>
-                                                    );
-                                                    case 73:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌨️☃️
-                                                        </div>
-                                                    );
-                                                    case 75:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌨️❄️
-                                                        </div>
-                                                    );
-                                                    case 86:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌨️⛄
-                                                        </div>
-                                                    );
-                                                    case 95:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        🌩️
-                                                        </div>
-                                                    );
-                                                    case 96:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        ⛈️🌨️
-                                                        </div>
-                                                    );
-                                                    case 99:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        ⛈️🌩️
-                                                        </div>
-                                                    );
-                                                    default:
-                                                    return (
-                                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                                        ❓
-                                                        </div>
-                                                    );
-                                            }
-                                        })()
-                                    ) : (
-                                        <div className="text-7xl md:text-8xl lg:text-9xl">
-                                            🌕
-                                        </div>
-                                    )}
+                                        {situationAct()}
                                 </div>
                             </div>
                         </div>
@@ -356,7 +375,7 @@ function Weather(){
                             <div className="bg-[#1a1f3a] rounded-xl md:rounded-2xl p-4 md:p-6">
                                 <p className="text-gray-400 text-xs md:text-sm mb-2">Précipitation</p>
                                 <p className="text-xl md:text-2xl font-bold">
-                                    {nextHourForecast.precipitation} mm
+                                    {nextHourForecast.precipitation} {nextHourForecast.precipitation}
                                 </p>
                             </div>
                             ) : null}
@@ -391,20 +410,13 @@ function Weather(){
                             </div>
 
                             <div className="space-y-3 md:space-y-4">
-                                {[
-                                    { time: '15:00', icon: '☁️', temp: 24 },
-                                    { time: '16:00', icon: '⛅', temp: 23 },
-                                    { time: '17:00', icon: '☀️', temp: 22 },
-                                    { time: '18:00', icon: '☀️', temp: 21 },
-                                    { time: '19:00', icon: '🌤️', temp: 20 },
-                                    { time: '20:00', icon: '☁️', temp: 19 },
-                                    { time: '21:00', icon: '🌙', temp: 18 },
-                                    { time: '22:00', icon: '🌙', temp: 17 },
-                                ].map((hour, index) => (
+                                {previsions.map((hour, index) => (
                                     <div key={index} className="flex items-center justify-between py-2 border-b border-gray-700/50 last:border-0">
                                         <span className="text-gray-400 w-12 md:w-16 text-sm md:text-base">{hour.time}</span>
-                                        <span className="text-xl md:text-2xl">{hour.icon}</span>
-                                        <span className="font-semibold w-10 md:w-12 text-right text-sm md:text-base">{hour.temp}°</span>
+                                        <span className="text-gray-400 w-12 md:w-16 text-sm md:text-base">
+                                            {hour.icone === 1 ? "☀️" : "🌕"}
+                                        </span>
+                                        <span className="font-semibold w-10 md:w-12 text-right text-sm md:text-base">{hour?.temp}°</span>
                                     </div>
                                 ))}
                             </div>
