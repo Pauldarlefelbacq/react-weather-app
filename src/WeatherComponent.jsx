@@ -103,21 +103,24 @@ function Weather(){
             const currentIndexHour = weatherdata.hourly.time.findIndex(time => time.startsWith(currentHourSearchString));
             if (currentIndexHour !== -1) {
                 const nextHourIndex = currentIndexHour + 1;
+                const precipitationUnit = weatherdata.hourly_units.precipitation;
                 if (nextHourIndex < weatherdata.hourly.time.length) {
                     setNextHourForecast({
                         temp: weatherdata.hourly.apparent_temperature[nextHourIndex],
                         pressure: weatherdata.hourly.surface_pressure[nextHourIndex],
                         precipitation: weatherdata.hourly.precipitation[nextHourIndex],
+                        precipitationUnit: precipitationUnit,
                     });
                 }else{
                     setNextHourForecast({
                         temp: weatherdata.hourly.apparent_temperature[currentIndexHour],
                         pressure: weatherdata.hourly.surface_pressure[currentIndexHour], 
                         precipitation: weatherdata.hourly.precipitation[currentIndexHour],
+                        precipitationUnit: precipitationUnit,
                     });
                 }
                 const prev = []
-                for (let i = currentIndexHour; i <= currentIndexHour + 5; i++) {
+                for (let i = currentIndexHour; i <= currentIndexHour + 7; i++) {
                     if (weatherdata.hourly.time[i]) { 
                         prev.push({
                             time: weatherdata.hourly.time[i].slice(11, 16),
@@ -341,7 +344,7 @@ function Weather(){
             <div className="px-4 md:px-8 py-6 md:py-8">
 
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-6 md:mb-8">
-                    Comment est le ciel aujourd'hui ?
+                    Quelle température aujourd'hui ? ?
                 </h1>
 
                 <div className="flex flex-col sm:flex-row justify-center gap-3 mb-8 md:mb-12 max-w-2xl mx-auto relative">
@@ -383,7 +386,7 @@ function Weather(){
                                 
                                 <div className="flex items-center justify-between">
                                     <div className="text-6xl md:text-7xl lg:text-8xl font-bold">
-                                        {Math.round(weatherData.current_weather.temperature)}°
+                                        {Math.round(weatherData.current_weather.temperature)}{weatherData.current_weather_units.temperature}
                                     </div>
                                         {situationAct()}
                                 </div>
@@ -419,7 +422,7 @@ function Weather(){
                             <div className="bg-[#1a1f3a] rounded-xl md:rounded-2xl p-4 md:p-6">
                                 <p className="text-gray-400 text-xs md:text-sm mb-2">Précipitation</p>
                                 <p className="text-xl md:text-2xl font-bold">
-                                    {nextHourForecast.precipitation} {nextHourForecast.precipitation}
+                                    {nextHourForecast.precipitation} {nextHourForecast.precipitationUnit}
                                 </p>
                             </div>
                             ) : null}
@@ -449,7 +452,7 @@ function Weather(){
                             <div className="flex justify-between items-center mb-5 md:mb-6">
                                 <h3 className="text-lg md:text-xl font-bold">Prévisions horaires</h3>
                                 <button className="text-xs md:text-sm text-gray-400 hover:text-white transition">
-                                    Aujourd'hui ▾
+                                    7 prochaines heures
                                 </button>
                             </div>
 
