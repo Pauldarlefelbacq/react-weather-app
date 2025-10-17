@@ -94,9 +94,10 @@ function Weather(){
 
             const currentIndexDay = weatherdata.daily.time.findIndex(time => time === currentDay);
             if (currentIndexDay !== -1 && currentIndexDay + 1 < weatherdata.daily.time.length) {
-                const dailyUV = weatherdata.daily.uv_index_max[currentIndexDay];
                 setDayoe({
-                    UV: Math.round(dailyUV),
+                    UV: Math.round(weatherdata.daily.uv_index_max[currentIndexDay]),
+                    sunset: weatherdata.daily.sunset[currentIndexDay],
+                    sunrise: weatherdata.daily.sunrise[currentIndexDay],
                 });
             }
 
@@ -429,7 +430,7 @@ function Weather(){
                         </div>
 
                         <div className="grid grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-4">
-                            {nextHourForecast && nextHourForecast.pressure ? (
+                            {nextHourForecast && typeof nextHourForecast.pressure !== "undefined" ? (
                                 <div className="bg-[#1a1f3a] rounded-xl md:rounded-2xl p-4 md:p-6">
                                     <p className="text-gray-400 text-xs md:text-sm mb-2">Pression</p>
                                     <p className="text-xl md:text-2xl font-bold">
@@ -438,10 +439,24 @@ function Weather(){
                                 </div>
                             ) : null}
 
-                            {dayoe && dayoe.UV ? (
+                            {dayoe && typeof dayoe.UV !== "undefined" ? (
                                 <div className="bg-[#1a1f3a] rounded-xl md:rounded-2xl p-4 md:p-6">
                                     <p className="text-gray-400 text-xs md:text-sm mb-2">Indice UV</p>
                                     <p className="text-xl md:text-2xl font-bold">{dayoe.UV}</p>
+                                </div>
+                            ) : null}
+
+                            {dayoe && dayoe.sunset ? (
+                                <div className="bg-[#1a1f3a] rounded-xl md:rounded-2xl p-4 md:p-6">
+                                    <p className="text-gray-400 text-xs md:text-sm mb-2">Couché de soleil</p>
+                                    <p className="text-xl md:text-2xl font-bold">{dayoe.sunset.slice(11)}</p>
+                                </div>
+                            ) : null}
+
+                            {dayoe && dayoe.sunrise ? (
+                                <div className="bg-[#1a1f3a] rounded-xl md:rounded-2xl p-4 md:p-6">
+                                    <p className="text-gray-400 text-xs md:text-sm mb-2">Lever de soleil</p>
+                                    <p className="text-xl md:text-2xl font-bold">{dayoe.sunrise.slice(11)}</p>
                                 </div>
                             ) : null}
                         </div>
@@ -463,7 +478,7 @@ function Weather(){
                                         <span className="text-gray-400 w-12 md:w-16 text-sm md:text-base">
                                             {hour.icone === 1 ? "☀️" : "🌕"}
                                         </span>
-                                        <span className="font-semibold w-10 md:w-12 text-right text-sm md:text-base">{hour?.temp}°</span>
+                                        <span className="font-semibold w-10 md:w-12 text-right text-sm md:text-base">{hour?.temp}{weatherData.current_weather_units.temperature}</span>
                                     </div>
                                 ))}
                             </div>
