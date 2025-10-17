@@ -18,12 +18,41 @@ function Weather(){
     const [precUnit, setPrecUnit] = useState("");
     const [tempUnit, setTempUnit] = useState("");
     const[previsions, setPrevisions] = useState([]);
+    const[suggestions, setSuggestions] = useState([])
 
     // const ref = useRef();
     // const [sort, setSort] = useState("Alphabetical");
     
 
+    useEffect(() => {
+        if (input.trim() === '') {
+            setSuggestions([]);
+            return;
+        }
 
+        const debounceTimer = setTimeout(() => {
+            const fetchSuggestions = async () => {
+                try {
+                    const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${input}&count=5`);
+                    const data = await response.json();
+                    setSuggestions(data.results || []);
+                } catch (error) {
+                    console.error("Echec des suggestions", error);
+                    setSuggestions([]);
+                }
+            };
+
+            fetchSuggestions();
+        }, 300);
+
+        return () => clearTimeout(debounceTimer);
+
+    }, [input]);
+    const handleSuggestionClick = (suggestion) => {
+        setVille(suggestion.name);
+        setInput("");
+        setSuggestions([]);
+    };
 
     useEffect(()=>{
 
@@ -315,15 +344,30 @@ function Weather(){
                     Comment est le ciel aujourd'hui ?
                 </h1>
 
-                <div className="flex flex-col sm:flex-row justify-center gap-3 mb-8 md:mb-12 max-w-2xl mx-auto">
-                    <input 
-                        onChange={(e)=> setInput(e.target.value)}
-                        value={input}
-                        id="text"
-                        type="text" 
-                        placeholder="Rechercher un lieu..."
-                        className="w-full sm:flex-1 px-4 md:px-6 py-3 bg-[#1a1f3a] border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition"
-                    />
+                <div className="flex flex-col sm:flex-row justify-center gap-3 mb-8 md:mb-12 max-w-2xl mx-auto relative">
+                    <div className="w-full sm:flex-1 relative">
+                        <input 
+                            onChange={(e)=> setInput(e.target.value)}
+                            value={input}
+                            id="text"
+                            type="text" 
+                            placeholder="Rechercher un lieu..."
+                            className="w-full px-4 md:px-6 py-3 bg-[#1a1f3a] border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition"
+                        />
+                        {suggestions.length > 0 && (
+                            <ul className="absolute w-full mt-2 bg-[#1a1f3a] border border-gray-700 rounded-lg z-50 overflow-hidden ">
+                                {suggestions.map((suggestion) => (
+                                    <li 
+                                        key={suggestion.id} 
+                                        className="px-4 py-3 cursor-pointer hover:bg-blue-600/50 transition-colors"
+                                        onClick={() => handleSuggestionClick(suggestion)}
+                                    >
+                                        {suggestion.name}, {suggestion.admin1}, {suggestion.country}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                     <button onClick={()=>setVille(input)} className="px-6 md:px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition whitespace-nowrap">
                         Rechercher
                     </button>
