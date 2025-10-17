@@ -345,7 +345,7 @@ function Weather(){
             <div className="px-4 md:px-8 py-6 md:py-8">
 
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-6 md:mb-8">
-                    Quelle température aujourd'hui ? ?
+                    Quelle température aujourd'hui ?
                 </h1>
 
                 <div className="flex flex-col sm:flex-row justify-center gap-3 mb-8 md:mb-12 max-w-2xl mx-auto relative">
